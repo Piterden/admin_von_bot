@@ -2,7 +2,8 @@ exports.up = async (knex) => {
   if (!await knex.schema.hasTable('groups')) {
     return knex.schema.createTable('groups', (table) => {
       table.bigInteger('id').unique()
-      table.string('title', 255).unique()
+      table.string('title', 255)
+      table.string('username', 255).unique()
       table.string('type', 40)
       table.boolean('active')
       table.text('config')

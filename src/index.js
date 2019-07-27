@@ -40,15 +40,31 @@ bot.use(async (ctx, next) => {
   const date = new Date()
 
   if (user) {
-    debug(user)
+    const diff = Object.keys(ctx.from).reduce((acc, key) => {
+      if (key === 'id') {
+        return acc
+      }
+      if (typeof ctx.from[key] === 'boolean') {
+        user[key] = Boolean(user[key])
+      }
+      if (ctx.from[key] !== user[key]) {
+        acc[key] = ctx.from[key]
+      }
+      return acc
+    }, {})
+
+    if (Object.keys(diff).length > 0) {
+      ctx.database('users')
+        .where({ id: Number(ctx.from) })
+        .update(diff)
+        .catch(onError)
+    }
     return next()
   }
 
-  await ctx.database('users').insert({
-    ...ctx.from,
-    created_at: date,
-    updated_at: date,
-  })
+  await ctx.database('users')
+    .insert({ ...ctx.from, created_at: date })
+    .catch(onError)
 
   return next()
 })
