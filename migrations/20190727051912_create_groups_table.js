@@ -1,8 +1,22 @@
+exports.up = async (knex) => {
+  if (!await knex.schema.hasTable('groups')) {
+    return knex.schema.createTable('groups', (table) => {
+      table.bigInteger('id').unique()
+      table.string('title', 255).unique()
+      table.string('type', 40)
+      table.boolean('active')
+      table.text('config')
+      table.timestamps(['created_at', 'updated_at'])
 
-exports.up = function(knex) {
-  
-};
+      table.primary('id')
+    })
+  }
+  return null
+}
 
-exports.down = function(knex) {
-  
-};
+exports.down = async (knex) => {
+  if (await knex.schema.hasTable('groups')) {
+    return knex.schema.dropTable('groups')
+  }
+  return null
+}
