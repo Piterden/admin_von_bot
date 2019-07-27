@@ -1,22 +1,17 @@
 extends: '@atomix/eslint-config'
 parser: babel-eslint
 rules:
-  max-len: 0
-  camelcase: 0
-  no-console: 0
-  no-magic-numbers: 0
-  no-param-reassign: off
+  max-len: off
+  camelcase: 1
+  no-console: 1
+  no-magic-numbers: 1
+  no-param-reassign: 1
   prettier/prettier: off
-  prefer-rest-params: off
-  no-underscore-dangle: off
-  unicorn/filename-case: off
-  class-methods-use-this: off
+  prefer-rest-params: 1
+  no-underscore-dangle: 1
+  unicorn/filename-case: 1
+  class-methods-use-this: 1
   import/no-default-export: off
-  # unicorn/prevent-abbreviations:
-  #   - error
-  #   -
-  #     whitelist:
-  #       ctx: true
   curly:
     - error
   comma-dangle:

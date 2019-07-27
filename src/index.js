@@ -3,6 +3,7 @@ require('module-alias/register')
 
 const knex = require('knex')
 const Telegraf = require('telegraf')
+const Markup = require('telegraf/markup')
 
 const { debug } = require('@/helpers')
 const knexConfig = require('@/../knexfile')
@@ -83,6 +84,26 @@ bot.on('voice', async (ctx) => {
  * Bot was added to a group
  */
 bot.on('new_chat_members', async (ctx) => {
+  if (!ctx.message.new_chat_member.is_bot) {
+    await ctx.restrictChatMember(
+      ctx.message.new_chat_member.id,
+      {
+        can_send_messages: false,
+        can_send_media_messages: false,
+        can_send_other_messages: false,
+        can_add_web_page_previews: false,
+      }
+    )
+    await ctx.reply(
+      'Нажмите на кнопу, чтобы продолжить общение.',
+      Markup.inlineKeyboard([
+        Markup.callbackButton('Кнопа', 'pass'),
+      ]).extra()
+    )
+  }
+
+  await ctx.deleteMessage(ctx.update.message.message_id)
+
   if (ctx.message.new_chat_member.username === BOT_NAME) {
     const [chat] = await ctx.database('groups')
       .where({ id: Number(ctx.chat.id) })
@@ -120,7 +141,6 @@ bot.on('new_chat_members', async (ctx) => {
         .catch(onError)
     }
   }
-  await ctx.deleteMessage(ctx.update.message.message_id)
 })
 
 /**
@@ -136,6 +156,22 @@ bot.on('left_chat_member', async (ctx) => {
       .catch(onError)
   }
   await ctx.deleteMessage(ctx.update.message.message_id)
+})
+
+/**
+ * Unmute user after captcha pass
+ */
+bot.action('pass', async (ctx) => {
+  await ctx.restrictChatMember(
+    ctx.from.id,
+    {
+      can_send_messages: true,
+      can_send_media_messages: true,
+      can_send_other_messages: true,
+      can_add_web_page_previews: true,
+    }
+  )
+  await ctx.deleteMessage()
 })
 
 bot.startPolling()
