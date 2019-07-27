@@ -1,0 +1,32 @@
+{
+  "name": "admin-fon-bot",
+  "version": "0.0.1",
+  "description": "Bot admin helper",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint -ext .js .",
+    "lint:fix": "eslint -ext .js --fix .",
+    "migrate": "npm run migrate:up",
+    "migrate:up": "knex migrate:latest",
+    "migrate:down": "knex migrate:rollback",
+    "migrate:refresh": "knex migrate:rollback && knex migrate:latest"
+  },
+  "author": "Denis Efremov <efremov.a.denis@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.0.0",
+    "knex": "^0.19.1",
+    "module-alias": "^2.2.0",
+    "mysql": "^2.17.1",
+    "telegraf": "^3.30.1"
+  },
+  "devDependencies": {
+    "@atomix/eslint-config": "^7.1.0",
+    "eslint": "^5.16.0",
+    "prettier": "^1.18.2"
+  },
+  "_moduleAliases": {
+    "@": "./src"
+  }
+}
