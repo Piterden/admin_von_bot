@@ -10,33 +10,27 @@ const knexConfig = require('@/../knexfile')
 // const { session } = Telegraf
 const { BOT_NAME, BOT_TOKEN } = process.env
 
-const bot = new Telegraf(BOT_TOKEN, { username: BOT_NAME })
-
 const onError = (error) => console.log(error)
+
+const bot = new Telegraf(BOT_TOKEN, { username: BOT_NAME })
 
 bot.context.database = knex(knexConfig)
 
+/**
+ * Log middleware
+ */
 bot.use(async (ctx, next) => {
   debug(ctx.update)
-
   next(ctx)
 })
 
-bot.on('sticker', async (ctx) => {
-  setTimeout(() => {
-    ctx.deleteMessage(ctx.update.message.message_id)
-  }, 30000)
-})
-
-bot.on('voice', async (ctx) => {
-  ctx.deleteMessage(ctx.update.message.message_id)
-})
-
 /**
- * User middleware
+ * User store middleware
  */
 bot.use(async (ctx, next) => {
-  const [user] = await ctx.database('users').where({ id: Number(ctx.from.id) })
+  const [user] = await ctx.database('users')
+    .where({ id: Number(ctx.from.id) })
+    .catch(onError)
   const date = new Date()
 
   if (user) {
@@ -54,9 +48,9 @@ bot.use(async (ctx, next) => {
     }, {})
 
     if (Object.keys(diff).length > 0) {
-      ctx.database('users')
+      await ctx.database('users')
         .where({ id: Number(ctx.from) })
-        .update(diff)
+        .update({ diff, updated_at: date })
         .catch(onError)
     }
     return next()
@@ -70,6 +64,22 @@ bot.use(async (ctx, next) => {
 })
 
 /**
+ * Removing stickers after 30 sec delay
+ */
+bot.on('sticker', async (ctx) => {
+  setTimeout(() => {
+    ctx.deleteMessage(ctx.update.message.message_id)
+  }, 30000)
+})
+
+/**
+ * Removing voices
+ */
+bot.on('voice', async (ctx) => {
+  await ctx.deleteMessage(ctx.update.message.message_id)
+})
+
+/**
  * Bot was added to a group
  */
 bot.on('new_chat_members', async (ctx) => {
@@ -80,26 +90,37 @@ bot.on('new_chat_members', async (ctx) => {
     const date = new Date()
 
     if (chat) {
-      await ctx.database('groups')
-        .where({ id: Number(chat.id) })
-        .update({ active: true, updated_at: date })
-        .catch(onError)
-    } else {
-      const { id, title, type } = ctx.chat
+      const diff = Object.keys(ctx.chat).reduce((acc, key) => {
+        if (key === 'id') {
+          return acc
+        }
+        if (typeof ctx.chat[key] === 'boolean') {
+          chat[key] = Boolean(chat[key])
+        }
+        if (ctx.chat[key] !== chat[key]) {
+          acc[key] = ctx.chat[key]
+        }
+        return acc
+      }, {})
 
+      if (Object.keys(diff).length > 0) {
+        await ctx.database('groups')
+          .where({ id: Number(chat.id) })
+          .update({ active: true, updated_at: date })
+          .catch(onError)
+      }
+    } else {
       await ctx.database('groups')
         .insert({
-          type,
-          title,
-          id: Number(id),
+          ...ctx.chat,
           active: true,
           config: '{}',
           created_at: date,
-          updated_at: date,
         })
         .catch(onError)
     }
   }
+  await ctx.deleteMessage(ctx.update.message.message_id)
 })
 
 /**
@@ -114,6 +135,7 @@ bot.on('left_chat_member', async (ctx) => {
       .update({ active: false, updated_at: date })
       .catch(onError)
   }
+  await ctx.deleteMessage(ctx.update.message.message_id)
 })
 
 bot.startPolling()
