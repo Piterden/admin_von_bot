@@ -40,6 +40,7 @@ bot.use(async (ctx, next) => {
   const date = new Date()
 
   if (user) {
+    debug(user)
     return next()
   }
 
