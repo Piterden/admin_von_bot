@@ -29,4 +29,3 @@ const config = {
 }
 
 module.exports = config[NODE_ENV]
-

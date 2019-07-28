@@ -1,17 +1,39 @@
-extends: '@atomix/eslint-config'
+root: true
 parser: babel-eslint
+extends:
+  - '@atomix'
+  - standard
+env:
+  es6: true
+  node: true
+  browser: true
+parserOptions:
+  sourceType: module
+  ecmaVersion: 2018
+  ecmaFeatures:
+    globalReturn: false
+    modules: true
+    experimentalObjectRestSpread: true
+globals:
+  BigInt: true
 rules:
   max-len: off
-  camelcase: 1
-  no-console: 1
-  no-magic-numbers: 1
-  no-param-reassign: 1
+  import/no-cycle: off
+  no-param-reassign: off
   prettier/prettier: off
-  prefer-rest-params: 1
-  no-underscore-dangle: 1
+  prefer-rest-params: off
+  prefer-destructuring: off
+  no-underscore-dangle: off
   unicorn/filename-case: off
-  class-methods-use-this: 1
+  unicorn/prefer-spread: off
+  class-methods-use-this: off
+  function-paren-newline: off
   import/no-default-export: off
+  # unicorn/prevent-abbreviations:
+  #   - error
+  #   -
+  #     whitelist:
+  #       ctx: true
   curly:
     - error
   comma-dangle:

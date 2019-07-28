@@ -6,6 +6,9 @@ const debug = (data) => console.log(inspect(data, {
   depth: 10,
 }))
 
+const onError = (error) => debug(error)
+
 module.exports = {
+  onError,
   debug,
 }

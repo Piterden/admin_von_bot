@@ -5,13 +5,11 @@ const knex = require('knex')
 const Telegraf = require('telegraf')
 const Markup = require('telegraf/markup')
 
-const { debug } = require('@/helpers')
+const { debug, onError } = require('@/helpers')
 const knexConfig = require('@/../knexfile')
 
 const { session } = Telegraf
 const { BOT_NAME, BOT_TOKEN } = process.env
-
-const onError = (error) => debug(error)
 
 const bot = new Telegraf(BOT_TOKEN, { username: BOT_NAME })
 
@@ -30,51 +28,7 @@ bot.use(async (ctx, next) => {
 /**
  * User store middleware
  */
-bot.use(async (ctx, next) => {
-  let [user] = await ctx.database('users')
-    .where({ id: Number(ctx.from.id) })
-    .catch(onError)
-  const date = new Date()
-
-  if (user) {
-    const diff = Object.keys(ctx.from).reduce((acc, key) => {
-      if (key === 'id') {
-        return acc
-      }
-      if (typeof ctx.from[key] === 'boolean') {
-        user[key] = Boolean(user[key])
-      }
-      if (ctx.from[key] !== user[key]) {
-        acc[key] = ctx.from[key]
-      }
-      return acc
-    }, {})
-
-    const fields = { ...diff, updated_at: date }
-
-    if (Object.keys(diff).length > 0) {
-      await ctx.database('users')
-        .where({ id: Number(ctx.from) })
-        .update(fields)
-        .catch(onError);
-
-      [user] = await ctx.database('users')
-        .where({ id: Number(ctx.from.id) })
-        .catch(onError)
-    }
-
-    ctx.session.user = user
-
-    return next()
-  }
-
-  user = { ...ctx.from, created_at: date }
-
-  await ctx.database('users').insert(user).catch(onError)
-  ctx.session.user = user
-
-  return next()
-})
+bot.use()
 
 /**
  * Removing stickers after 30 sec delay
@@ -173,7 +127,6 @@ bot.on('new_chat_members', async (ctx) => {
   }
 
   await ctx.deleteMessage(ctx.message.message_id)
-
 })
 
 /**
