@@ -9,7 +9,7 @@ rules:
   prettier/prettier: off
   prefer-rest-params: 1
   no-underscore-dangle: 1
-  unicorn/filename-case: 1
+  unicorn/filename-case: off
   class-methods-use-this: 1
   import/no-default-export: off
   curly:

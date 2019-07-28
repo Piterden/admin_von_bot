@@ -8,14 +8,16 @@ const Markup = require('telegraf/markup')
 const { debug } = require('@/helpers')
 const knexConfig = require('@/../knexfile')
 
-// const { session } = Telegraf
+const { session } = Telegraf
 const { BOT_NAME, BOT_TOKEN } = process.env
 
-const onError = (error) => console.log(error)
+const onError = (error) => debug(error)
 
 const bot = new Telegraf(BOT_TOKEN, { username: BOT_NAME })
 
 bot.context.database = knex(knexConfig)
+
+bot.use(session())
 
 /**
  * Log middleware
@@ -29,7 +31,7 @@ bot.use(async (ctx, next) => {
  * User store middleware
  */
 bot.use(async (ctx, next) => {
-  const [user] = await ctx.database('users')
+  let [user] = await ctx.database('users')
     .where({ id: Number(ctx.from.id) })
     .catch(onError)
   const date = new Date()
@@ -48,18 +50,28 @@ bot.use(async (ctx, next) => {
       return acc
     }, {})
 
+    const fields = { ...diff, updated_at: date }
+
     if (Object.keys(diff).length > 0) {
       await ctx.database('users')
         .where({ id: Number(ctx.from) })
-        .update({ diff, updated_at: date })
+        .update(fields)
+        .catch(onError);
+
+      [user] = await ctx.database('users')
+        .where({ id: Number(ctx.from.id) })
         .catch(onError)
     }
+
+    ctx.session.user = user
+
     return next()
   }
 
-  await ctx.database('users')
-    .insert({ ...ctx.from, created_at: date })
-    .catch(onError)
+  user = { ...ctx.from, created_at: date }
+
+  await ctx.database('users').insert(user).catch(onError)
+  ctx.session.user = user
 
   return next()
 })
@@ -81,38 +93,27 @@ bot.on('voice', async (ctx) => {
 })
 
 /**
+ * Restricting to post links during defined time
+ */
+bot.entity(({ type }) => type === 'url', async (ctx) => {
+  // ctx.session.user
+})
+
+/**
  * Bot was added to a group
  */
 bot.on('new_chat_members', async (ctx) => {
-  if (!ctx.message.new_chat_member.is_bot) {
-    await ctx.restrictChatMember(
-      ctx.message.new_chat_member.id,
-      {
-        can_send_messages: false,
-        can_send_media_messages: false,
-        can_send_other_messages: false,
-        can_add_web_page_previews: false,
-      }
-    )
-    await ctx.reply(
-      'Нажмите на кнопу, чтобы продолжить общение.',
-      Markup.inlineKeyboard([
-        Markup.callbackButton('Кнопа', 'pass'),
-      ]).extra()
-    )
-  }
-
-  await ctx.deleteMessage(ctx.update.message.message_id)
+  const date = new Date()
 
   if (ctx.message.new_chat_member.username === BOT_NAME) {
     const [chat] = await ctx.database('groups')
       .where({ id: Number(ctx.chat.id) })
       .catch(onError)
-    const date = new Date()
 
     if (chat) {
       const diff = Object.keys(ctx.chat).reduce((acc, key) => {
         if (key === 'id') {
+          chat[key] = Number(chat[key])
           return acc
         }
         if (typeof ctx.chat[key] === 'boolean') {
@@ -127,7 +128,7 @@ bot.on('new_chat_members', async (ctx) => {
       if (Object.keys(diff).length > 0) {
         await ctx.database('groups')
           .where({ id: Number(chat.id) })
-          .update({ active: true, updated_at: date })
+          .update({ ...diff, active: true, updated_at: date })
           .catch(onError)
       }
     } else {
@@ -135,12 +136,44 @@ bot.on('new_chat_members', async (ctx) => {
         .insert({
           ...ctx.chat,
           active: true,
-          config: '{}',
+          config: JSON.stringify({}),
           created_at: date,
         })
         .catch(onError)
     }
+    return
   }
+
+  if (!ctx.message.new_chat_member.is_bot) {
+    ctx.session.restricted = await ctx.restrictChatMember(
+      ctx.message.new_chat_member.id,
+      {
+        can_send_messages: false,
+        can_send_media_messages: false,
+        can_send_other_messages: false,
+        can_add_web_page_previews: false,
+      }
+    )
+
+    await ctx.reply(
+      'Нажмите на кнопу, чтобы продолжить общение.',
+      Markup.inlineKeyboard([
+        Markup.callbackButton('Кнопа', 'pass'),
+      ]).extra()
+    )
+
+    await ctx.database('users_groups')
+      .insert({
+        user_id: ctx.message.new_chat_member.id,
+        group_id: ctx.chat.id,
+        trusted: false,
+        created_at: date,
+      })
+      .catch(onError)
+  }
+
+  await ctx.deleteMessage(ctx.message.message_id)
+
 })
 
 /**
@@ -155,13 +188,25 @@ bot.on('left_chat_member', async (ctx) => {
       .update({ active: false, updated_at: date })
       .catch(onError)
   }
-  await ctx.deleteMessage(ctx.update.message.message_id)
+
+  await ctx.database('users_groups')
+    .delete({
+      user_id: ctx.message.left_chat_member.id,
+      group_id: ctx.chat.id,
+    })
+    .catch(onError)
+
+  await ctx.deleteMessage(ctx.message.message_id)
 })
 
 /**
  * Unmute user after captcha pass
  */
 bot.action('pass', async (ctx) => {
+  if (!ctx.session.restricted) {
+    return ctx.answerCbQuery('Не ты, балда!!!')
+  }
+
   await ctx.restrictChatMember(
     ctx.from.id,
     {
@@ -171,7 +216,11 @@ bot.action('pass', async (ctx) => {
       can_add_web_page_previews: true,
     }
   )
+
+  ctx.session.restricted = false
   await ctx.deleteMessage()
+
+  return ctx.answerCbQuery('Спасибо!!!')
 })
 
 bot.startPolling()
