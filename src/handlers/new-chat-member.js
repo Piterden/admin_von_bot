@@ -70,14 +70,14 @@ module.exports = () => async (ctx) => {
       ctx.deleteMessage(captcha.message_id)
     }, CAPTCHA_TIMEOUT)
 
-    await ctx.database('users_groups')
-      .insert({
-        user_id: id,
-        group_id: ctx.chat.id,
-        trusted: false,
-        created_at: date,
-      })
-      .catch(errorHandler)
+    // await ctx.database('users_groups')
+    //   .insert({
+    //     user_id: id,
+    //     group_id: ctx.chat.id,
+    //     trusted: false,
+    //     created_at: date,
+    //   })
+    //   .catch(errorHandler)
   }
 
   setTimeout(() => {

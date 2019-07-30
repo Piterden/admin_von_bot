@@ -36,14 +36,20 @@ bot.on('voice', voiceHandler())
 bot.on('sticker', stickerHandler())
 bot.on('new_chat_members', newChatMemberHandler())
 bot.on('left_chat_member', leftChatMemberHandler())
+
 bot.action(/^pass=(\d+)/, passHandler())
+
+bot.action(/^action=(\w+)/, async (ctx) => {
+  switch (ctx.match[1]) {
+    case 'delete':
+      ctx.tg.deleteMessage(ctx.chat.id, ctx.update.callback_query.message.message_id)
+      break
+    default:
+  }
+})
 
 // bot.entity(({ type }) => type === 'url', async (ctx) => {
 //   // ctx.session.user
 // })
-
-/**
- * Unmute user after captcha pass
- */
 
 bot.startPolling()

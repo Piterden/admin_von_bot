@@ -12,12 +12,12 @@ module.exports = () => async (ctx) => {
       .catch(errorHandler)
   }
 
-  await ctx.database('users_groups')
-    .delete({
-      user_id: ctx.message.left_chat_member.id,
-      group_id: ctx.chat.id,
-    })
-    .catch(errorHandler)
+  // await ctx.database('users_groups')
+  //   .delete({
+  //     user_id: ctx.message.left_chat_member.id,
+  //     group_id: ctx.chat.id,
+  //   })
+  //   .catch(errorHandler)
 
   await ctx.deleteMessage(ctx.message.message_id)
 }
