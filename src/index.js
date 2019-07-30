@@ -5,8 +5,10 @@ const knex = require('knex')
 const Telegraf = require('telegraf')
 const Markup = require('telegraf/markup')
 
-const { debug, onError } = require('@/helpers')
 const knexConfig = require('@/../knexfile')
+const { errorHandler } = require('@/helpers')
+const { voiceHandler, stickerHandler } = require('@/handlers')
+const { userMiddleware, debugMiddleware } = require('@/middlewares')
 
 const { session } = Telegraf
 const { BOT_NAME, BOT_TOKEN } = process.env
@@ -15,40 +17,18 @@ const bot = new Telegraf(BOT_TOKEN, { username: BOT_NAME })
 
 bot.context.database = knex(knexConfig)
 
+/**
+ * Middlewares
+ */
 bot.use(session())
+bot.use(userMiddleware())
+bot.use(debugMiddleware())
 
 /**
- * Log middleware
+ * Handlers
  */
-bot.use(async (ctx, next) => {
-  debug(ctx.update)
-  next(ctx)
-})
-
-/**
- * User store middleware
- */
-bot.use()
-
-/**
- * Removing stickers after 30 sec delay
- */
-bot.on('sticker', async (ctx) => {
-  setTimeout(() => {
-    ctx.deleteMessage(ctx.update.message.message_id)
-  }, 30000)
-})
-
-/**
- * Removing voices
- */
-bot.on('voice', async (ctx) => {
-  await ctx.deleteMessage(ctx.update.message.message_id)
-})
-
-/**
- * Restricting to post links during defined time
- */
+bot.on('voice', voiceHandler())
+bot.on('sticker', stickerHandler())
 bot.entity(({ type }) => type === 'url', async (ctx) => {
   // ctx.session.user
 })
@@ -62,7 +42,7 @@ bot.on('new_chat_members', async (ctx) => {
   if (ctx.message.new_chat_member.username === BOT_NAME) {
     const [chat] = await ctx.database('groups')
       .where({ id: Number(ctx.chat.id) })
-      .catch(onError)
+      .catch(errorHandler)
 
     if (chat) {
       const diff = Object.keys(ctx.chat).reduce((acc, key) => {
@@ -83,7 +63,7 @@ bot.on('new_chat_members', async (ctx) => {
         await ctx.database('groups')
           .where({ id: Number(chat.id) })
           .update({ ...diff, active: true, updated_at: date })
-          .catch(onError)
+          .catch(errorHandler)
       }
     } else {
       await ctx.database('groups')
@@ -93,7 +73,7 @@ bot.on('new_chat_members', async (ctx) => {
           config: JSON.stringify({}),
           created_at: date,
         })
-        .catch(onError)
+        .catch(errorHandler)
     }
     return
   }
@@ -109,12 +89,21 @@ bot.on('new_chat_members', async (ctx) => {
       }
     )
 
-    await ctx.reply(
-      'Нажмите на кнопу, чтобы продолжить общение.',
+    const captcha = await ctx.reply(
+      `Привет, @${ctx.message.new_chat_member.username}, нажми на кнопу, чтобы начать общение.`,
       Markup.inlineKeyboard([
-        Markup.callbackButton('Кнопа', 'pass'),
+        Markup.callbackButton(
+          'Кнопа',
+          `pass=${ctx.message.new_chat_member.id}`
+        ),
       ]).extra()
     )
+
+    ctx.session.timeoutToKick = setTimeout(() => {
+      ctx.session.timeoutToKick = null
+      ctx.kickChatMember(ctx.message.new_chat_member.id)
+      ctx.deleteMessage(captcha.message_id)
+    }, 300000)
 
     await ctx.database('users_groups')
       .insert({
@@ -123,10 +112,12 @@ bot.on('new_chat_members', async (ctx) => {
         trusted: false,
         created_at: date,
       })
-      .catch(onError)
+      .catch(errorHandler)
   }
 
-  await ctx.deleteMessage(ctx.message.message_id)
+  setTimeout(() => {
+    ctx.deleteMessage(ctx.message.message_id)
+  })
 })
 
 /**
@@ -139,7 +130,7 @@ bot.on('left_chat_member', async (ctx) => {
     await ctx.database('groups')
       .where({ id: Number(ctx.chat.id) })
       .update({ active: false, updated_at: date })
-      .catch(onError)
+      .catch(errorHandler)
   }
 
   await ctx.database('users_groups')
@@ -147,7 +138,7 @@ bot.on('left_chat_member', async (ctx) => {
       user_id: ctx.message.left_chat_member.id,
       group_id: ctx.chat.id,
     })
-    .catch(onError)
+    .catch(errorHandler)
 
   await ctx.deleteMessage(ctx.message.message_id)
 })
@@ -155,9 +146,13 @@ bot.on('left_chat_member', async (ctx) => {
 /**
  * Unmute user after captcha pass
  */
-bot.action('pass', async (ctx) => {
-  if (!ctx.session.restricted) {
+bot.action(/^pass=(\d+)/, async (ctx) => {
+  if (!ctx.session.restricted || ctx.from.id !== Number(ctx.match[1])) {
     return ctx.answerCbQuery('Не ты, балда!!!')
+  }
+
+  if (ctx.session.timeoutToKick) {
+    clearTimeout(ctx.session.timeoutToKick)
   }
 
   await ctx.restrictChatMember(

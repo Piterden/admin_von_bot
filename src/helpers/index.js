@@ -1,14 +1,14 @@
 const { inspect } = require('util')
 
 const debug = (data) => console.log(inspect(data, {
-  colors: true,
   showHidden: true,
+  colors: true,
   depth: 10,
 }))
 
-const onError = (error) => debug(error)
+const errorHandler = (error) => debug(error)
 
 module.exports = {
-  onError,
+  errorHandler,
   debug,
 }
