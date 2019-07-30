@@ -79,35 +79,31 @@ bot.on('new_chat_members', async (ctx) => {
   }
 
   if (!ctx.message.new_chat_member.is_bot) {
-    ctx.session.restricted = await ctx.restrictChatMember(
-      ctx.message.new_chat_member.id,
-      {
-        can_send_messages: false,
-        can_send_media_messages: false,
-        can_send_other_messages: false,
-        can_add_web_page_previews: false,
-      }
-    )
+    const { id, username } = ctx.message.new_chat_member
+
+    ctx.session.restricted = await ctx.restrictChatMember(id, {
+      can_send_messages: false,
+      can_send_media_messages: false,
+      can_send_other_messages: false,
+      can_add_web_page_previews: false,
+    })
 
     const captcha = await ctx.reply(
-      `Привет, @${ctx.message.new_chat_member.username}, нажми на кнопу, чтобы начать общение.`,
+      `Привет, @${username || ''}, нажми на кнопу, чтобы начать общение.`,
       Markup.inlineKeyboard([
-        Markup.callbackButton(
-          'Кнопа',
-          `pass=${ctx.message.new_chat_member.id}`
-        ),
+        Markup.callbackButton('Кнопа', `pass=${id}`),
       ]).extra()
     )
 
     ctx.session.timeoutToKick = setTimeout(() => {
       ctx.session.timeoutToKick = null
-      ctx.kickChatMember(ctx.message.new_chat_member.id)
+      ctx.kickChatMember(id)
       ctx.deleteMessage(captcha.message_id)
     }, 300000)
 
     await ctx.database('users_groups')
       .insert({
-        user_id: ctx.message.new_chat_member.id,
+        user_id: id,
         group_id: ctx.chat.id,
         trusted: false,
         created_at: date,
