@@ -5,6 +5,7 @@ module.exports = () => async (ctx) => {
 
   if (ctx.session.timeoutToKick) {
     clearTimeout(ctx.session.timeoutToKick)
+    ctx.session.timeoutToKick = null
   }
 
   await ctx.restrictChatMember(
@@ -19,5 +20,5 @@ module.exports = () => async (ctx) => {
 
   await ctx.deleteMessage()
 
-  return ctx.answerCbQuery('Спасибо!!!')
+  return ctx.answerCbQuery('Правильно! Добро пожаловать!')
 }

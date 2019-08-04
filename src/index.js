@@ -8,6 +8,7 @@ const knexConfig = require('@/../knexfile')
 
 const { userMiddleware, debugMiddleware } = require('@/middlewares')
 const {
+  kickHandler,
   passHandler,
   voiceHandler,
   stickerHandler,
@@ -37,6 +38,7 @@ bot.on('sticker', stickerHandler())
 bot.on('new_chat_members', newChatMemberHandler())
 bot.on('left_chat_member', leftChatMemberHandler())
 
+bot.action(/^kick=(\d+)/, kickHandler())
 bot.action(/^pass=(\d+)/, passHandler())
 
 bot.action(/^action=(\w+)/, async (ctx) => {

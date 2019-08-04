@@ -48,7 +48,12 @@ module.exports = () => async (ctx) => {
   }
 
   if (!ctx.message.new_chat_member.is_bot) {
-    const { id, username } = ctx.message.new_chat_member
+    const {
+      id,
+      username,
+      first_name: firstName,
+      last_name: lastName,
+    } = ctx.message.new_chat_member
 
     ctx.session.restricted = await ctx.restrictChatMember(id, {
       can_send_messages: false,
@@ -57,17 +62,31 @@ module.exports = () => async (ctx) => {
       can_add_web_page_previews: false,
     })
 
+    const name = username
+      ? `@${username}`
+      : `[${firstName || lastName}](tg://user?id=${id})`
+
     const captcha = await ctx.reply(
-      `Привет, @${username || ''}, нажми на кнопу, чтобы начать общение.`,
-      Markup.inlineKeyboard([
-        Markup.callbackButton('Кнопа', `pass=${id}`),
-      ]).extra()
+      `Привет, ${name}, нажми на правильную кнопу, чтобы начать общение.
+
+*Что обсуждается в этом чате?*`,
+      {
+        ...Markup.inlineKeyboard([
+          Markup.callbackButton('Котики', `kick=${id}`),
+          Markup.callbackButton('JavaScript', `pass=${id}`),
+          Markup.callbackButton('Анимэ', `kick=${id}`),
+        ].sort(() => Math.random() - 0.5)).extra(),
+        parse_mode: 'Markdown',
+      }
     )
 
     ctx.session.timeoutToKick = setTimeout(() => {
       ctx.session.timeoutToKick = null
       ctx.kickChatMember(id)
       ctx.deleteMessage(captcha.message_id)
+      setTimeout(() => {
+        ctx.tg.unbanChatMember(ctx.chat.id, id)
+      }, CAPTCHA_TIMEOUT)
     }, CAPTCHA_TIMEOUT)
 
     // await ctx.database('users_groups')
