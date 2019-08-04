@@ -4,6 +4,7 @@ module.exports = () => async (ctx) => {
   if (!ctx.session.restricted || ctx.from.id !== Number(id)) {
     return ctx.answerCbQuery('Не ты, балда!!!')
   }
+  ctx.session.restricted = null
 
   if (ctx.session.timeoutToKick) {
     clearTimeout(ctx.session.timeoutToKick)

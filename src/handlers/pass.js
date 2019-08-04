@@ -2,6 +2,7 @@ module.exports = () => async (ctx) => {
   if (!ctx.session.restricted || ctx.from.id !== Number(ctx.match[1])) {
     return ctx.answerCbQuery('Не ты, балда!!!')
   }
+  ctx.session.restricted = null
 
   if (ctx.session.timeoutToKick) {
     clearTimeout(ctx.session.timeoutToKick)
@@ -18,7 +19,8 @@ module.exports = () => async (ctx) => {
     }
   )
 
+  ctx.answerCbQuery('Правильно! Добро пожаловать!')
   await ctx.deleteMessage()
 
-  return ctx.answerCbQuery('Правильно! Добро пожаловать!')
+  return true
 }

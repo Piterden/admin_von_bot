@@ -1,6 +1,10 @@
 const { errorHandler } = require('@/helpers')
 
 module.exports = () => async (ctx, next) => {
+  if (ctx.session.user) {
+    return next()
+  }
+
   let [user] = await ctx.database('users')
     .where({ id: Number(ctx.from.id) })
     .catch(errorHandler)
