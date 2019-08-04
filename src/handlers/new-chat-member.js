@@ -1,6 +1,7 @@
 const Markup = require('telegraf/markup')
 
 const { errorHandler } = require('@/helpers')
+// const { messageGreetings, messageCaptcha } = require('@/config')
 
 const { BOT_NAME } = process.env
 const CAPTCHA_TIMEOUT = 300000
@@ -63,7 +64,7 @@ module.exports = () => async (ctx) => {
     })
 
     const name = username
-      ? `@${username}`
+      ? `@${username.replace(/([_*~])/g, '\\$1')}`
       : `[${firstName || lastName}](tg://user?id=${id})`
 
     const captcha = await ctx.reply(
