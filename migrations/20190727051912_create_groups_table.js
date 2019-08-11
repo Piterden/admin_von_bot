@@ -6,6 +6,7 @@ exports.up = async (knex) => {
       table.string('username', 255).unique()
       table.string('type', 40)
       table.boolean('active')
+      table.boolean('admin')
       table.json('config')
       table.timestamps(['created_at', 'updated_at'])
 

@@ -1,7 +1,7 @@
 module.exports = {
   captcha: {
-    timeoutToKickByIgnore: 300,
-    timeoutToUnban: 40,
+    waitingTimeout: 300,
+    unbanTimeout: 40,
     messageGreetings: 'Привет, {mention}, нажми на правильную кнопу, чтобы начать общение.',
     messageWelcome: 'Добро пожаловать, {mention}!',
     messageCaptcha: '*Что обсуждается в этом чате?*',

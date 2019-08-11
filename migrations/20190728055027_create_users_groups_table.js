@@ -8,8 +8,8 @@ exports.up = async (knex) => {
       table.timestamps(['created_at'])
 
       table.primary(['user_id', 'group_id'], 'users_in_groups')
-      table.foreign('user_id').references('id').inTable('users')
-      table.foreign('group_id').references('id').inTable('groups')
+      // table.foreign('user_id').references('id').inTable('users')
+      // table.foreign('group_id').references('id').inTable('groups')
     })
   }
   return null

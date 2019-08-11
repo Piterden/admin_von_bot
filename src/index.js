@@ -12,6 +12,7 @@ const {
   passHandler,
   voiceHandler,
   stickerHandler,
+  animationHandler,
   newChatMemberHandler,
   leftChatMemberHandler,
 } = require('@/handlers')
@@ -35,6 +36,7 @@ bot.use(debugMiddleware())
  */
 bot.on('voice', voiceHandler())
 bot.on('sticker', stickerHandler())
+bot.on('animation', animationHandler())
 bot.on('new_chat_members', newChatMemberHandler())
 bot.on('left_chat_member', leftChatMemberHandler())
 

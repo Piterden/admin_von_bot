@@ -1,6 +1,15 @@
+const { errorHandler } = require('@/helpers')
+
 module.exports = () => async (ctx) => {
+  const [chat] = await ctx.database('groups')
+    .where({ id: Number(ctx.chat.id) })
+    .catch(errorHandler)
+  let { config } = chat
+
+  config = JSON.parse(config)
+
   if (!ctx.session.restricted || ctx.from.id !== Number(ctx.match[1])) {
-    return ctx.answerCbQuery('Не ты, балда!!!')
+    return ctx.answerCbQuery(config.captcha.notYouToast)
   }
   ctx.session.restricted = null
 
@@ -19,7 +28,7 @@ module.exports = () => async (ctx) => {
     }
   )
 
-  ctx.answerCbQuery('Правильно! Добро пожаловать!')
+  ctx.answerCbQuery(config.captcha.successToast)
   await ctx.deleteMessage()
 
   return true

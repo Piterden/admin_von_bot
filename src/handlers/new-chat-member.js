@@ -1,19 +1,19 @@
 const Markup = require('telegraf/markup')
 
 const { errorHandler } = require('@/helpers')
-// const { messageGreetings, messageCaptcha } = require('@/config')
 
 const { BOT_NAME } = process.env
-const CAPTCHA_TIMEOUT = 300000
 
 module.exports = () => async (ctx) => {
   const date = new Date()
+  const [chat] = await ctx.database('groups')
+    .where({ id: Number(ctx.chat.id) })
+    .catch(errorHandler)
+  let { config } = chat
+
+  config = JSON.parse(config)
 
   if (ctx.message.new_chat_member.username === BOT_NAME) {
-    const [chat] = await ctx.database('groups')
-      .where({ id: Number(ctx.chat.id) })
-      .catch(errorHandler)
-
     if (chat) {
       const diff = Object.keys(ctx.chat).reduce((acc, key) => {
         if (key === 'id') {
@@ -66,17 +66,18 @@ module.exports = () => async (ctx) => {
     const name = username
       ? `@${username.replace(/([_*~])/g, '\\$1')}`
       : `[${firstName || lastName}](tg://user?id=${id})`
+    const buttons = config.captcha.buttons.split('\n').map((button, index) => (
+      Markup.callbackButton(button, `${index ? 'kick' : 'pass'}=${id}`)
+    )).sort(() => Math.random() - 0.5)
 
-    const captcha = await ctx.reply(
-      `Привет, ${name}, нажми на правильную кнопу, чтобы начать общение.
+    const captchaMessage = await ctx.reply(
+      `${config.captcha.messageGreetings.replace('{name}', name)}
+
+${config.captcha.messageCaptcha}` || `Привет, ${name}, нажми на правильную кнопу, чтобы начать общение.
 
 *Что обсуждается в этом чате?*`,
       {
-        ...Markup.inlineKeyboard([
-          Markup.callbackButton('Котики', `kick=${id}`),
-          Markup.callbackButton('JavaScript', `pass=${id}`),
-          Markup.callbackButton('Анимэ', `kick=${id}`),
-        ].sort(() => Math.random() - 0.5)).extra(),
+        ...Markup.inlineKeyboard(buttons).extra(),
         parse_mode: 'Markdown',
       }
     )
@@ -84,11 +85,11 @@ module.exports = () => async (ctx) => {
     ctx.session.timeoutToKick = setTimeout(() => {
       ctx.session.timeoutToKick = null
       ctx.kickChatMember(id)
-      ctx.deleteMessage(captcha.message_id)
+      ctx.deleteMessage(captchaMessage.message_id)
       setTimeout(() => {
         ctx.tg.unbanChatMember(ctx.chat.id, id)
-      }, CAPTCHA_TIMEOUT)
-    }, CAPTCHA_TIMEOUT)
+      }, config.captcha.unbanTimeout * 1000)
+    }, config.captcha.waitingTimeout * 1000)
 
     // await ctx.database('users_groups')
     //   .insert({
