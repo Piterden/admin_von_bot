@@ -5,11 +5,10 @@ const knex = require('knex')
 const Telegraf = require('telegraf')
 
 const knexConfig = require('@/../knexfile')
-
+const { captchaCommand } = require('@/commands')
 const { userMiddleware, debugMiddleware } = require('@/middlewares')
+const { kickAction, passAction, actionsAction } = require('@/actions')
 const {
-  kickHandler,
-  passHandler,
   voiceHandler,
   stickerHandler,
   animationHandler,
@@ -40,17 +39,21 @@ bot.on('animation', animationHandler())
 bot.on('new_chat_members', newChatMemberHandler())
 bot.on('left_chat_member', leftChatMemberHandler())
 
-bot.action(/^kick=(\d+)/, kickHandler())
-bot.action(/^pass=(\d+)/, passHandler())
+/**
+ * Actions
+ */
+bot.action(/^kick=(\d+)/, kickAction())
+bot.action(/^pass=(\d+)/, passAction())
+bot.action(/^action=(\w+)/, actionsAction())
 
-bot.action(/^action=(\w+)/, async (ctx) => {
-  switch (ctx.match[1]) {
-    case 'delete':
-      ctx.tg.deleteMessage(ctx.chat.id, ctx.update.callback_query.message.message_id)
-      break
-    default:
-  }
-})
+/**
+ * Commands
+ */
+bot.command('captcha', captchaCommand())
+
+// bot.action(/^settings=captcha&field=(\w+)/, async (ctx) => {
+//   captcha[ctx.match[1]]
+// })
 
 // bot.entity(({ type }) => type === 'url', async (ctx) => {
 //   // ctx.session.user
