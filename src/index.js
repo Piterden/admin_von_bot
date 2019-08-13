@@ -7,8 +7,14 @@ const Telegraf = require('telegraf')
 const knexConfig = require('@/../knexfile')
 const { captchaCommand } = require('@/commands')
 const { userMiddleware, debugMiddleware } = require('@/middlewares')
-const { kickAction, passAction, actionsAction } = require('@/actions')
 const {
+  kickAction,
+  passAction,
+  actionsAction,
+  editSettingAction,
+} = require('@/actions')
+const {
+  hearsHandler,
   voiceHandler,
   stickerHandler,
   animationHandler,
@@ -33,6 +39,7 @@ bot.use(debugMiddleware())
 /**
  * Handlers
  */
+bot.hears(/.*/, hearsHandler())
 bot.on('voice', voiceHandler())
 bot.on('sticker', stickerHandler())
 bot.on('animation', animationHandler())
@@ -45,18 +52,14 @@ bot.on('left_chat_member', leftChatMemberHandler())
 bot.action(/^kick=(\d+)/, kickAction())
 bot.action(/^pass=(\d+)/, passAction())
 bot.action(/^action=(\w+)/, actionsAction())
+bot.action(/^settings=(\w+)&field=(\w+)/, editSettingAction())
 
 /**
  * Commands
  */
 bot.command('captcha', captchaCommand())
 
-// bot.action(/^settings=captcha&field=(\w+)/, async (ctx) => {
-//   captcha[ctx.match[1]]
-// })
-
-// bot.entity(({ type }) => type === 'url', async (ctx) => {
-//   // ctx.session.user
-// })
-
+/**
+ * Run
+ */
 bot.startPolling()

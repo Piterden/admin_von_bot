@@ -23,6 +23,14 @@ module.exports = () => async (ctx) => {
     extra,
   )
 
+  // const step = 10000
+
+  // for (let timeout = step; timeout < DELAY; timeout += step) {
+  //   setTimeout(() => {
+  //     ctx.tg.editMessage
+  //   }, timeout)
+  // }
+
   setTimeout(() => {
     ctx.deleteMessage(message.message_id)
   }, DELAY)

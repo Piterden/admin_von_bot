@@ -9,10 +9,6 @@ const debug = (data) => console.log(inspect(data, {
 
 const errorHandler = (error) => debug(error)
 
-const render = (string) => {
-  string.match(/{(\w*)}/g)
-}
-
 const makeUserMention = ({
   id,
   username,
@@ -25,6 +21,5 @@ const makeUserMention = ({
 module.exports = {
   makeUserMention,
   errorHandler,
-  render,
   debug,
 }
