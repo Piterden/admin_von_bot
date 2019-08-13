@@ -5,7 +5,7 @@ const knex = require('knex')
 const Telegraf = require('telegraf')
 
 const knexConfig = require('@/../knexfile')
-const { captchaCommand } = require('@/commands')
+const { captchaCommand, startCommand } = require('@/commands')
 const { userMiddleware, debugMiddleware } = require('@/middlewares')
 const {
   kickAction,
@@ -57,6 +57,7 @@ bot.action(/^settings=(\w+)&field=(\w+)/, editSettingAction())
 /**
  * Commands
  */
+bot.start(startCommand())
 bot.command('captcha', captchaCommand())
 
 /**
