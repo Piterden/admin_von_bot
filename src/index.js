@@ -17,6 +17,7 @@ const {
   hearsHandler,
   voiceHandler,
   stickerHandler,
+  replyHandler,
   animationHandler,
   newChatMemberHandler,
   leftChatMemberHandler,
@@ -39,7 +40,7 @@ bot.use(debugMiddleware())
 /**
  * Handlers
  */
-bot.hears(/.*/, hearsHandler())
+bot.hears(/.*/, hearsHandler(), replyHandler())
 bot.on('voice', voiceHandler())
 bot.on('sticker', stickerHandler())
 bot.on('animation', animationHandler())
