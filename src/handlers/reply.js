@@ -28,3 +28,22 @@ module.exports = () => ctx => {
     }
   }
 };
+exports.updateMessage = (counts) => ctx => {
+  if (ctx.message) {
+    const { text } = ctx.message
+    const replyToMessageId = ctx.message.reply_to_message.message_id
+    const extra = Markup.inlineKeyboard([
+      Markup.callbackButton(`${LIKE_BUTTON} ${counts[0]}`, 'action=reply_like'),
+      Markup.callbackButton(`${DISLIKE_BUTTON} ${counts[1]}`, 'action=reply_dislike'),
+    ]).extra()
+
+    extra.reply_to_message_id = replyToMessageId
+    debug(extra)
+    return ctx.tg.editMessageText(
+      ctx.chat.id,
+      undefined,
+      text,
+      extra,
+    )
+  }
+};
