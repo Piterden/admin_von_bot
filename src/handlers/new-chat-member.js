@@ -1,6 +1,6 @@
 const Markup = require('telegraf/markup')
 
-const { errorHandler } = require('@/helpers')
+const { errorHandler, defaultConfig } = require('@/helpers')
 
 const { BOT_NAME } = process.env
 
@@ -9,9 +9,6 @@ module.exports = () => async (ctx) => {
   const [chat] = await ctx.database('groups')
     .where({ id: Number(ctx.chat.id) })
     .catch(errorHandler)
-  let { config } = chat
-
-  config = JSON.parse(config)
 
   if (ctx.message.new_chat_member.username === BOT_NAME) {
     if (chat) {
@@ -40,13 +37,17 @@ module.exports = () => async (ctx) => {
         .insert({
           ...ctx.chat,
           active: true,
-          config: JSON.stringify({}),
+          config: JSON.stringify(defaultConfig),
           created_at: date,
         })
         .catch(errorHandler)
     }
     return
   }
+
+  let { config } = chat
+
+  config = JSON.parse(config)
 
   if (!ctx.message.new_chat_member.is_bot) {
     const {

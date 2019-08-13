@@ -1,5 +1,7 @@
 const { inspect } = require('util')
 
+const configMap = require('@/config')
+
 // eslint-disable-next-line no-console
 const debug = (data) => console.log(inspect(data, {
   showHidden: true,
@@ -8,6 +10,20 @@ const debug = (data) => console.log(inspect(data, {
 }))
 
 const errorHandler = (error) => debug(error)
+
+const defaultConfig = Object.entries(configMap).reduce(
+  (acc, [settings, object]) => {
+    acc[settings] = Object.entries(object).reduce(
+      (accField, [field, { default: value }]) => {
+        accField[field] = value
+        return accField
+      },
+      {},
+    )
+    return acc
+  },
+  {},
+)
 
 const makeUserMention = ({
   id,
@@ -19,7 +35,8 @@ const makeUserMention = ({
   : `[${firstName || lastName}](tg://user?id=${id})`
 
 module.exports = {
-  makeUserMention,
-  errorHandler,
   debug,
+  errorHandler,
+  defaultConfig,
+  makeUserMention,
 }
