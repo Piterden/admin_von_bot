@@ -2,17 +2,18 @@ const Markup = require('telegraf/markup')
 
 const LIKE_BUTTON = '👍🏻'
 const DISLIKE_BUTTON = '👎🏻'
+const ACTION = 'likes'
 
 const getExtra = () => Markup.inlineKeyboard([
-  Markup.callbackButton(LIKE_BUTTON, 'reply_like=like_count'),
-  Markup.callbackButton(DISLIKE_BUTTON, 'reply_like=dislike_count_3'),
+  Markup.callbackButton(LIKE_BUTTON, `${ACTION}=likes`),
+  Markup.callbackButton(DISLIKE_BUTTON, `${ACTION}=dislikes`),
 ]).extra()
 
 const setExtra = (likeCount, dislikeCount) => Markup.inlineKeyboard([
   Markup.callbackButton(`${LIKE_BUTTON} ${likeCount}`,
-    `reply_like=like_count_${likeCount}`),
+    `${ACTION}=likes_${likeCount}`),
   Markup.callbackButton(`${DISLIKE_BUTTON} ${dislikeCount}`,
-    `reply_like=dislike_count_${dislikeCount}`),
+    `${ACTION}=dislikes_${dislikeCount}`),
 ]).extra()
 
 module.exports = {

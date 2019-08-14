@@ -54,7 +54,7 @@ bot.on('left_chat_member', leftChatMemberHandler())
 bot.action(/^kick=(\d+)/, kickAction())
 bot.action(/^pass=(\d+)/, passAction())
 bot.action(/^action=(\w+)/, actionsAction())
-bot.action(/^reply_like=(\w+)/, replyAction())
+bot.action(/^likes=(\w+)/, replyAction())
 bot.action(/^settings=(\w+)&field=(\w+)/, editSettingAction())
 
 /**

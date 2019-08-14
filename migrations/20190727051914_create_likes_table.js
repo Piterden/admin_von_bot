@@ -7,7 +7,7 @@ exports.up = async (knex) => {
       table.integer('likes').unsigned()
       table.integer('dislikes').unsigned()
       table.json('message')
-      table.timestamps(['created_at', 'updated_at'])
+      table.timestamps(true, true)
 
       table.primary(['chat_id', 'message_id'])
       table.index('likes')
