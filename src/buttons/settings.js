@@ -1,9 +1,14 @@
 const Markup = require('telegraf/markup')
 
+const configMap = require('@/config')
+
 module.exports = (ctx) => {
   const config = ctx.session.new || ctx.session.old
-  const buttons = Object.keys(config[ctx.session.edit]).map((button) => (
-    Markup.callbackButton(button, `settings=captcha&field=${button}`)
+  const buttons = Object.keys(config[ctx.session.edit]).map((key) => (
+    Markup.callbackButton(
+      configMap[ctx.session.edit][key].name,
+      `settings=captcha&field=${key}`
+    )
   )).reduce((acc, cur, idx) => {
     const index = parseInt(idx / 2, 10)
 
@@ -14,8 +19,8 @@ module.exports = (ctx) => {
   }, [])
 
   buttons.push([
-    Markup.callbackButton('Save', 'action=save', !ctx.session.new),
-    Markup.callbackButton('Exit', 'action=exit'),
+    Markup.callbackButton('Сохранить', 'action=save', !ctx.session.new),
+    Markup.callbackButton('Выход', 'action=exit'),
   ])
 
   return buttons

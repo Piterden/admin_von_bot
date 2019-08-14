@@ -1,5 +1,6 @@
 const Markup = require('telegraf/markup')
 
+const configMap = require('@/config')
 const { errorHandler } = require('@/helpers')
 const { settingsButtons } = require('@/buttons')
 
@@ -30,10 +31,9 @@ module.exports = () => async (ctx) => {
   const buttons = settingsButtons(ctx)
   const { message_id: id } = await ctx.reply(
     `Текущий чат имеет следующие настройки капчи:
-
-\`\`\`
-${JSON.stringify(config.captcha, null, '  ')}
-\`\`\`
+${Object.keys(configMap.captcha).map((key) => `
+*${configMap.captcha[key].name}:*
+_${config.captcha[key]}_`).join('\n')}
 
 Выберите параметр для его изменения:`,
     {
