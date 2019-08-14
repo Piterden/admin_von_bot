@@ -58,6 +58,9 @@ typings/
 # dotenv environment variables file
 .env
 
+# WebStorm
+.idea
+
 *.traineddata
 files/
 
