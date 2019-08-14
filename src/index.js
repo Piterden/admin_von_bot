@@ -10,6 +10,7 @@ const { userMiddleware, debugMiddleware } = require('@/middlewares')
 const {
   kickAction,
   passAction,
+  replyAction,
   actionsAction,
   editSettingAction,
 } = require('@/actions')
@@ -53,6 +54,7 @@ bot.on('left_chat_member', leftChatMemberHandler())
 bot.action(/^kick=(\d+)/, kickAction())
 bot.action(/^pass=(\d+)/, passAction())
 bot.action(/^action=(\w+)/, actionsAction())
+bot.action(/^reply_like=(\w+)/, replyAction())
 bot.action(/^settings=(\w+)&field=(\w+)/, editSettingAction())
 
 /**

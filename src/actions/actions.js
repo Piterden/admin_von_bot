@@ -1,5 +1,4 @@
 const { errorHandler } = require('@/helpers')
-const { updateMessage } = require('@/handlers')
 
 module.exports = () => async (ctx) => {
   switch (ctx.match[1]) {
@@ -35,17 +34,6 @@ module.exports = () => async (ctx) => {
         })
         ctx.session.messages = []
       }
-      break
-    case 'reply_dislike':
-    case 'reply_like':
-      await ctx.database('likes')
-      .update({ [ctx.match[1]]: ctx.database(`${ctx.match[1]} + 1`) })
-      .where({
-        id: Number(ctx.chat.id),
-        message_id: ctx.update.callback_query.message.message_id,
-      })
-      .catch(errorHandler)
-      return updateMessage(ctx.match[1],'?')
       break
     default:
   }
