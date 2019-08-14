@@ -20,6 +20,7 @@ rules:
   prefer-rest-params: off
   prefer-destructuring: off
   no-underscore-dangle: off
+  unicorn/filename-case: off
   function-paren-newline: off
   import/no-default-export: off
   unicorn/prevent-abbreviations:
