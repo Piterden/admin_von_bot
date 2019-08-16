@@ -15,6 +15,7 @@ const {
 } = require('@/actions')
 const {
   hearsHandler,
+  likesHandler,
   voiceHandler,
   stickerHandler,
   animationHandler,
@@ -40,6 +41,7 @@ bot.use(debugMiddleware())
  * Handlers
  */
 bot.hears(/.*/, hearsHandler())
+bot.hears(/^(?:\+{1,3}|-{1,3})$/, likesHandler())
 bot.on('voice', voiceHandler())
 bot.on('sticker', stickerHandler())
 bot.on('animation', animationHandler())
