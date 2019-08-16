@@ -10,15 +10,14 @@ const { userMiddleware, debugMiddleware } = require('@/middlewares')
 const {
   kickAction,
   passAction,
-  replyAction,
   actionsAction,
   editSettingAction,
 } = require('@/actions')
 const {
   hearsHandler,
+  likesHandler,
   voiceHandler,
   stickerHandler,
-  replyHandler,
   animationHandler,
   newChatMemberHandler,
   leftChatMemberHandler,
@@ -41,7 +40,8 @@ bot.use(debugMiddleware())
 /**
  * Handlers
  */
-bot.hears(/.*/, hearsHandler(), replyHandler())
+bot.hears(/.*/, hearsHandler())
+bot.hears(/^(?:\+{1,3}|-{1,3})$/, likesHandler())
 bot.on('voice', voiceHandler())
 bot.on('sticker', stickerHandler())
 bot.on('animation', animationHandler())
@@ -54,7 +54,6 @@ bot.on('left_chat_member', leftChatMemberHandler())
 bot.action(/^kick=(\d+)/, kickAction())
 bot.action(/^pass=(\d+)/, passAction())
 bot.action(/^action=(\w+)/, actionsAction())
-bot.action(/^likes=(\w+)/, replyAction())
 bot.action(/^settings=(\w+)&field=(\w+)/, editSettingAction())
 
 /**

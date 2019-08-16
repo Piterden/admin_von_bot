@@ -3,15 +3,13 @@ exports.up = async (knex) => {
     return knex.schema.createTable('likes', (table) => {
       table.bigInteger('chat_id')
       table.bigInteger('message_id').unsigned()
-      table.bigInteger('user_id').unsigned()
-      table.integer('likes').unsigned()
-      table.integer('dislikes').unsigned()
+      table.bigInteger('to_id').unsigned()
+      table.bigInteger('from_id').unsigned()
+      table.integer('value')
       table.json('message')
-      table.timestamps(true, true)
+      table.timestamp('created_at').notNullable().defaultTo(knex.fn.now())
 
-      table.primary(['chat_id', 'message_id'])
-      table.index('likes')
-      table.index('dislikes')
+      table.primary(['chat_id', 'message_id', 'to_id', 'from_id']).unique()
     })
   }
   return null
