@@ -17,9 +17,9 @@
   "author": "Denis Efremov <efremov.a.denis@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "dotenv": "^8.0.0",
-    "knex": "^0.19.1",
-    "module-alias": "^2.2.0",
+    "dotenv": "^8.1.0",
+    "knex": "^0.19.4",
+    "module-alias": "^2.2.1",
     "mysql": "^2.17.1",
     "telegraf": "^3.32.0"
   },
@@ -27,10 +27,10 @@
     "@atomix/eslint-config": "^7.1.0",
     "eslint": "^5.16.0",
     "eslint-config-standard": "^12.0.0",
-    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-node": "^9.2.0",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.0",
-    "eslint-plugin-unicorn": "^9.1.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "eslint-plugin-unicorn": "^7.1.0",
     "husky": "^2.7.0",
     "prettier": "^1.18.2"
   },
