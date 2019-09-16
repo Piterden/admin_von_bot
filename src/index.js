@@ -39,7 +39,7 @@ bot.use(debugMiddleware())
 /**
  * Handlers
  */
-bot.hears(/.*/, hearsHandler())
+bot.hears(/[\S\s]*/, hearsHandler())
 bot.on('voice', voiceHandler())
 bot.on('sticker', stickerHandler())
 bot.on('animation', animationHandler())

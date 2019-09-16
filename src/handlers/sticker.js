@@ -8,7 +8,7 @@ module.exports = () => async (ctx) => {
   ctx.deleteMessage(ctx.message.message_id)
 
   const extra = Markup.inlineKeyboard([
-    Markup.callbackButton(`From: ${ctx.from.first_name}`, 'nope'),
+    Markup.callbackButton(`From: ${ctx.from.first_name}`, 'action=info'),
     Markup.callbackButton('Delete', 'action=delete'),
   ]).extra()
 
