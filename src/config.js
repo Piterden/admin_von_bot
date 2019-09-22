@@ -1,3 +1,41 @@
+const messageTypeConfig = (type) => ({
+  [type]: {
+    enabled: {
+      name: 'Включено',
+      type: Boolean,
+      default: true,
+      yes: '✅',
+      no: '⛔️',
+      description: 'Определяет включен ли фильтр для голосовых сообщений.',
+    },
+    buttons: {
+      name: 'Кнопки',
+      type: Boolean,
+      default: true,
+      yes: '✅',
+      no: '⛔️',
+      description: 'Определяет подменять ли сообщение своим с инлайн кнопками.',
+    },
+    removeTimeout: {
+      name: 'Таймаут удаления',
+      type: Number,
+      default: 0,
+      description: 'Определяет через какое время сообщение удалится.',
+      unit: 'сек',
+      min: 0,
+      max: 3600,
+    },
+    showAuthor: {
+      name: 'Показ. автора',
+      type: Boolean,
+      default: true,
+      yes: '✅',
+      no: '⛔️',
+      description: 'Определяет показывать или нет имя автора сообщения',
+    },
+  },
+})
+
 module.exports = {
   captcha: {
     waitingTimeout: {
@@ -12,7 +50,7 @@ module.exports = {
     unbanTimeout: {
       name: 'Таймаут до разбана',
       type: Number,
-      description: 'Время ожидания перед разбаном при неправильном выборе',
+      description: 'Время ожидания перед разбаном при неправильном выборе.',
       default: 40,
       unit: 'сек',
       min: 30,
@@ -73,32 +111,6 @@ module.exports = {
     },
   },
   spam: {
-    voice: {
-      enabled: {
-        name: 'Включено',
-        type: Boolean,
-        default: true,
-        yes: '✅',
-        no: '⛔️',
-        description: 'Определяет включен ли фильтр для голосовых сообщений',
-      },
-      removeTimeout: {
-        name: 'Таймаут удаления',
-        type: Number,
-        default: 0,
-        description: 'Определяет через какое время сообщение удалится',
-        unit: 'сек',
-        min: 0,
-        max: 3600,
-      },
-      showAuthor: {
-        name: 'Показ. автора',
-        type: Boolean,
-        default: true,
-        yes: '✅',
-        no: '⛔️',
-        description: 'Определяет показывать или нет имя автора сообщения',
-      },
-    },
+    ...messageTypeConfig()
   },
 }
