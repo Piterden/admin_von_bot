@@ -1,5 +1,6 @@
 const Markup = require('telegraf/markup')
 
+const configMap = require('@/config')
 const { errorHandler } = require('@/helpers')
 const { settingsButtons } = require('@/buttons')
 
@@ -17,23 +18,22 @@ module.exports = () => async (ctx) => {
     return
   }
 
-  ctx.session.edit = 'captcha'
+  ctx.session.edit = 'spam'
 
-  const [chat] = await ctx.database('groups')
+  const chat = await ctx.database('groups')
     .where({ id: Number(ctx.chat.id) })
+    .first()
     .catch(errorHandler)
-  let { config } = chat
+  const { config } = chat
 
-  config = JSON.parse(config)
-  ctx.session.old = config
+  ctx.session.old = JSON.parse(config)
 
   const buttons = settingsButtons(ctx)
   const { message_id: id } = await ctx.reply(
-    `Текущий чат имеет следующие настройки капчи:
-
-\`\`\`
-${JSON.stringify(config.captcha, null, '  ')}
-\`\`\`
+    `Текущий чат имеет следующие настройки спам-фильтра:
+${Object.keys(configMap.spam).map((key) => `
+*${configMap.captcha[key].name}:*
+_${config.captcha[key]}_`).join('\n')}
 
 Выберите параметр для его изменения:`,
     {
