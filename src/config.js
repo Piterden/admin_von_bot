@@ -111,6 +111,6 @@ module.exports = {
     },
   },
   spam: {
-    ...messageTypeConfig()
+    ...messageTypeConfig(),
   },
 }
