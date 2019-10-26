@@ -1,5 +1,5 @@
 {
-  "name": "admin-fon-bot",
+  "name": "admin-von-bot",
   "version": "0.0.1",
   "description": "Bot admin helper",
   "main": "src/index.js",
