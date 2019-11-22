@@ -35,7 +35,7 @@ const saveUserAction = (ctx, action, button = null) =>
     })
     .catch(errorHandler)
 
-const getButtonByIndex = ({ captcha: buttons }, index) => buttons.split('\n')[index]
+const getButtonByIndex = ({ captcha: { buttons } }, index) => buttons.split('\n')[index]
 
 const makeUserMention = ({
   id,
