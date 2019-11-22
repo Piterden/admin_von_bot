@@ -1,6 +1,6 @@
 const Markup = require('telegraf/markup')
 
-const { errorHandler, defaultConfig } = require('@/helpers')
+const { errorHandler, defaultConfig, saveUserAction } = require('@/helpers')
 
 const { BOT_NAME } = process.env
 
@@ -33,13 +33,15 @@ module.exports = () => async (ctx) => {
           .catch(errorHandler)
       }
     } else {
+      const data = {
+        ...ctx.chat,
+        active: true,
+        config: JSON.stringify(defaultConfig),
+        created_at: date,
+      }
+      delete data.all_members_are_administrators
       await ctx.database('groups')
-        .insert({
-          ...ctx.chat,
-          active: true,
-          config: JSON.stringify(defaultConfig),
-          created_at: date,
-        })
+        .insert(data)
         .catch(errorHandler)
     }
     return
@@ -67,9 +69,16 @@ module.exports = () => async (ctx) => {
     const name = username
       ? `@${username.replace(/([_*~])/g, '\\$1')}`
       : `[${firstName || lastName}](tg://user?id=${id})`
-    const buttons = config.captcha.buttons.split('\n').map((button, index) => (
-      Markup.callbackButton(button, `${index ? 'kick' : 'pass'}=${id}`)
-    )).sort(() => Math.random() - 0.5)
+
+    const buttons = config.captcha.buttons.split('\n').map((button, index) => {
+      const firstSymbol = button[0]
+      let type = index ? 'kick' : 'pass'
+      if (firstSymbol === '+' || firstSymbol === '-') {
+        type = firstSymbol === '+' ? 'pass' : 'kick'
+        button = button.slice(1)
+      }
+      return Markup.callbackButton(button, `${type}=${id}&index=${index}`)
+    }).sort(() => Math.random() - 0.5)
 
     const captchaMessage = await ctx.reply(
       `${config.captcha.messageGreetings.replace('{name}', name)}
@@ -100,6 +109,8 @@ ${config.captcha.messageCaptcha}` || `Привет, ${name}, нажми на п�
     //     created_at: date,
     //   })
     //   .catch(errorHandler)
+
+    await saveUserAction(ctx, 'joined')
   }
 
   setTimeout(() => {

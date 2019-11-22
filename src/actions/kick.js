@@ -1,4 +1,4 @@
-const { errorHandler } = require('@/helpers')
+const { errorHandler, saveUserAction, getButtonByIndex } = require('@/helpers')
 
 module.exports = () => async (ctx) => {
   const [chat] = await ctx.database('groups')
@@ -8,7 +8,7 @@ module.exports = () => async (ctx) => {
 
   config = JSON.parse(config)
 
-  const [, id] = ctx.match
+  const [, id, index] = ctx.match
 
   if (!ctx.session.restricted || ctx.from.id !== Number(id)) {
     return ctx.answerCbQuery(config.captcha.notYouToast)
@@ -28,6 +28,9 @@ module.exports = () => async (ctx) => {
   setTimeout(() => {
     ctx.tg.unbanChatMember(ctx.chat.id, id)
   }, 40000)
+
+  const button = getButtonByIndex(config, index)
+  await saveUserAction(ctx, 'kicked', button)
 
   return true
 }

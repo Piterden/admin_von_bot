@@ -25,6 +25,18 @@ const defaultConfig = Object.entries(configMap).reduce(
   {},
 )
 
+const saveUserAction = (ctx, action, button = null) =>
+  ctx.database('actions')
+    .insert({
+      chat_id: ctx.chat.id,
+      user_id: ctx.from.id,
+      action,
+      button,
+    })
+    .catch(errorHandler)
+
+const getButtonByIndex = ({ captcha: buttons }, index) => buttons.split('\n')[index]
+
 const makeUserMention = ({
   id,
   username,
@@ -39,4 +51,6 @@ module.exports = {
   errorHandler,
   defaultConfig,
   makeUserMention,
+  saveUserAction,
+  getButtonByIndex,
 }

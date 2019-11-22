@@ -1,4 +1,4 @@
-const { errorHandler } = require('@/helpers')
+const { errorHandler, saveUserAction, getButtonByIndex } = require('@/helpers')
 
 module.exports = () => async (ctx) => {
   const [chat] = await ctx.database('groups')
@@ -7,6 +7,9 @@ module.exports = () => async (ctx) => {
   let { config } = chat
 
   config = JSON.parse(config)
+
+  // eslint-disable-next-line unicorn/no-unreadable-array-destructuring
+  const [, , index] = ctx.match
 
   if (!ctx.session.restricted || ctx.from.id !== Number(ctx.match[1])) {
     return ctx.answerCbQuery(config.captcha.notYouToast)
@@ -30,6 +33,9 @@ module.exports = () => async (ctx) => {
 
   ctx.answerCbQuery(config.captcha.successToast)
   await ctx.deleteMessage()
+
+  const button = getButtonByIndex(config, index)
+  await saveUserAction(ctx, 'passed', button)
 
   return true
 }
