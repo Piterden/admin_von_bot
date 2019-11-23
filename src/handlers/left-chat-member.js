@@ -1,4 +1,4 @@
-const { errorHandler } = require('@/helpers')
+const { errorHandler, saveUserAction } = require('@/helpers')
 
 const { BOT_NAME } = process.env
 
@@ -10,6 +10,8 @@ module.exports = () => async (ctx) => {
       .where({ id: Number(ctx.chat.id) })
       .update({ active: false, updated_at: date })
       .catch(errorHandler)
+
+    await saveUserAction(ctx, 'left')
   }
 
   // await ctx.database('users_groups')

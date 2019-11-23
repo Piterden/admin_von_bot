@@ -5,7 +5,7 @@ const knex = require('knex')
 const Telegraf = require('telegraf')
 
 const knexConfig = require('@/../knexfile')
-const { captchaCommand, startCommand } = require('@/commands')
+const { captchaCommand, startCommand, statsCommand } = require('@/commands')
 const { userMiddleware, debugMiddleware } = require('@/middlewares')
 const {
   kickAction,
@@ -49,8 +49,8 @@ bot.on('left_chat_member', leftChatMemberHandler())
 /**
  * Actions
  */
-bot.action(/^kick=(\d+)/, kickAction())
-bot.action(/^pass=(\d+)/, passAction())
+bot.action(/^kick=(\d+)&index=(\d+)/, kickAction())
+bot.action(/^pass=(\d+)&index=(\d+)/, passAction())
 bot.action(/^action=(\w+)/, actionsAction())
 bot.action(/^settings=(\w+)&field=(\w+)/, editSettingAction())
 
@@ -59,6 +59,7 @@ bot.action(/^settings=(\w+)&field=(\w+)/, editSettingAction())
  */
 bot.start(startCommand())
 bot.command('captcha', captchaCommand())
+bot.command('stats', statsCommand())
 
 /**
  * Run
