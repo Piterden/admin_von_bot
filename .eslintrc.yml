@@ -23,11 +23,6 @@ rules:
   unicorn/filename-case: off
   function-paren-newline: off
   import/no-default-export: off
-  unicorn/prevent-abbreviations:
-    - error
-    -
-      whitelist:
-        ctx: true
   curly:
     - error
   comma-dangle:
