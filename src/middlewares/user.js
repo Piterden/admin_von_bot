@@ -5,11 +5,10 @@ module.exports = () => async (ctx, next) => {
     return next()
   }
 
-  let user = await ctx.database('users')
-    .where({ id: Number(ctx.from.id) })
-    .first()
-    .catch(errorHandler)
+  const users = ctx.database('users')
+  const id = Number(ctx.from.id)
   const date = new Date()
+  const user = await users.where({ id }).first().catch(errorHandler)
 
   if (user) {
     const diff = Object.keys(ctx.from).reduce((acc, key) => {
@@ -28,26 +27,17 @@ module.exports = () => async (ctx, next) => {
     const fields = { ...diff, updated_at: date }
 
     if (Object.keys(diff).length > 0) {
-      await ctx.database('users')
-        .where({ id: Number(ctx.from.id) })
-        .update(fields)
-        .catch(errorHandler)
-
-      user = await ctx.database('users')
-        .where({ id: Number(ctx.from.id) })
-        .first()
-        .catch(errorHandler)
+      await users.where({ id }).update(fields).catch(errorHandler)
+      ctx.session.user = await users.where({ id }).first().catch(errorHandler)
+      return next()
     }
 
     ctx.session.user = user
-
     return next()
   }
 
-  user = { ...ctx.from, created_at: date }
-
-  await ctx.database('users').insert(user).catch(errorHandler)
-  ctx.session.user = user
+  ctx.session.user = { ...ctx.from, created_at: date }
+  await users.insert(ctx.session.user).catch(errorHandler)
 
   return next()
 }
