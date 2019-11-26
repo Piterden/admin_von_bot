@@ -23,6 +23,7 @@ rules:
   unicorn/filename-case: off
   function-paren-newline: off
   import/no-default-export: off
+  unicorn/prevent-abbreviations: off
   curly:
     - error
   comma-dangle:
