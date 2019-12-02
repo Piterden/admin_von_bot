@@ -36,6 +36,7 @@ module.exports = () => async (ctx, next) => {
     return next()
   }
 
+  ctx.session.restricted = true
   ctx.session.user = { ...ctx.from, created_at: date }
   await users().insert(ctx.session.user).catch(errorHandler)
 
