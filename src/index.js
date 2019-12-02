@@ -8,7 +8,6 @@ const knexConfig = require('@/../knexfile')
 const { settingsCommand, startCommand } = require('@/commands')
 const { userMiddleware, debugMiddleware } = require('@/middlewares')
 const {
-  kickAction,
   passAction,
   actionsAction,
   editSettingAction,
@@ -49,9 +48,8 @@ bot.on('left_chat_member', leftChatMemberHandler())
 /**
  * Actions
  */
-bot.action(/^kick=(\d+)/, kickAction())
-bot.action(/^pass=(\d+)/, passAction())
 bot.action(/^action=(\w+)/, actionsAction())
+bot.action(/^([.\d]{15,22})=(\d+)/, passAction())
 bot.action(/^settings=(\w+)&field=(\w+)/, editSettingAction())
 
 /**

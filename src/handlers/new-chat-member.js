@@ -6,8 +6,9 @@ const { BOT_NAME } = process.env
 
 module.exports = () => async (ctx) => {
   const date = new Date()
-  const [chat] = await ctx.database('groups')
+  const chat = await ctx.database('groups')
     .where({ id: Number(ctx.chat.id) })
+    .first()
     .catch(errorHandler)
 
   if (ctx.message.new_chat_member.username === BOT_NAME) {
@@ -45,9 +46,7 @@ module.exports = () => async (ctx) => {
     return
   }
 
-  let { config } = chat
-
-  config = JSON.parse(config)
+  const config = JSON.parse(chat.config)
 
   if (!ctx.message.new_chat_member.is_bot) {
     const {
@@ -64,19 +63,32 @@ module.exports = () => async (ctx) => {
       can_add_web_page_previews: false,
     })
 
+    ctx.session.pass = Math.random().toString()
+
     const name = username
       ? `@${username.replace(/([_*~])/g, '\\$1')}`
       : `[${firstName || lastName}](tg://user?id=${id})`
-    const buttons = config.captcha.buttons.split('\n').map((button, index) => (
-      Markup.callbackButton(button, `${index ? 'kick' : 'pass'}=${id}`)
-    )).sort(() => Math.random() - 0.5)
+    const buttonsArray = config.captcha.buttons.split('\n')
+    const correct = buttonsArray[0]
+    const buttons = buttonsArray.sort(() => Math.random() - 0.5)
+      .reduce((acc, button, index) => {
+        const newIndex = parseInt(index / 3, 10)
+
+        acc[newIndex] = acc[newIndex] || []
+        acc[newIndex].push(
+          Markup.callbackButton(
+            button,
+            `${button === correct ? ctx.session.pass : Math.random().toString()}=${id}`,
+          )
+        )
+
+        return acc
+      }, [])
 
     const captchaMessage = await ctx.reply(
       `${config.captcha.messageGreetings.replace('{name}', name)}
 
-${config.captcha.messageCaptcha}` || `Привет, ${name}, нажми на правильную кнопу, чтобы начать общение.
-
-*Что обсуждается в этом чате?*`,
+${config.captcha.messageCaptcha}`,
       {
         ...Markup.inlineKeyboard(buttons).extra(),
         parse_mode: 'Markdown',
@@ -91,15 +103,6 @@ ${config.captcha.messageCaptcha}` || `Привет, ${name}, нажми на п�
         ctx.tg.unbanChatMember(ctx.chat.id, id)
       }, config.captcha.unbanTimeout * 1000)
     }, config.captcha.waitingTimeout * 1000)
-
-    // await ctx.database('users_groups')
-    //   .insert({
-    //     user_id: id,
-    //     group_id: ctx.chat.id,
-    //     trusted: false,
-    //     created_at: date,
-    //   })
-    //   .catch(errorHandler)
   }
 
   setTimeout(() => {

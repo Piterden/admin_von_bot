@@ -20,8 +20,9 @@ module.exports = () => async (ctx) => {
 
   ctx.session.edit = 'captcha'
 
-  const [chat] = await ctx.database('groups')
+  const chat = await ctx.database('groups')
     .where({ id: Number(ctx.chat.id) })
+    .first()
     .catch(errorHandler)
   let { config } = chat
 
